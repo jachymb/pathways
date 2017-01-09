@@ -23,6 +23,7 @@ rules_shape = n, max_k, 2
 MU = 1024 # Needs to be divisible by 4!
 CXPB = 0.9
 
+TRIES = 8
 
 POP_FILE = "pop.dat"
 POP_FILE = POP_FILE if len(sys.argv) == 1 else sys.argv[1]
@@ -63,9 +64,9 @@ def hamming(a, b):
     #print("callint hamming")
     return int(popcount(a^b).sum())
 
-def attractor_appearance(rules : np.ndarray, attractor : tuple, tries : int = 8, maxsteps = 16):
+def attractor_appearance(rules : np.ndarray, attractor : tuple, maxsteps = 16):
     #print("callint attractor_appearance")
-    return model_attractors(interpret_dnf, rules, tries,
+    return model_attractors(interpret_dnf, rules, TRIES,
             canonicalize = True,
             container = Counter,
             maxsteps = maxsteps)[attractor]

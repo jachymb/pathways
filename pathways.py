@@ -7,7 +7,7 @@ from sympy.core import symbols
 from sympy.core.symbol import Symbol
 from sympy.logic.boolalg import Or, And, Not, to_dnf, to_cnf, Boolean
 from sympy.core.function import FunctionClass
-from types import GeneratorType
+from collections import Counter
 
 class P(IntEnum):
     ICL = 0
@@ -305,11 +305,21 @@ def complete_attractor(interpretation_func, state : np.uint32, rules, canonicali
 
     return tuple(explored)
 
-def run_network(interpretation_func, state : np.uint32, rules) -> GeneratorType:
+def run_network(interpretation_func, state : np.uint32, rules):
     yield state
     while True:
         state = step(interpretation_func, state, rules)
         yield state
+
+def model_attractors_exhaustive(P, interpretation_func, rules, 
+        canonicalize = True, container = Counter):
+    total = 1 << (len(P) - 1)
+    total = 1000
+    return container(tqdm((
+            complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = None)
+            for state in range(total)),
+            total = total
+            ))
 
 def model_attractors(interpretation_func, rules, subsample_size : int,
         canonicalize = True, container = set, maxsteps = None):
