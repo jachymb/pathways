@@ -23,7 +23,7 @@ rules_shape = n, max_k, 2
 MU = 1024 # Needs to be divisible by 4!
 CXPB = 0.9
 
-TRIES = 8
+TRIES = 128
 
 POP_FILE = "pop.dat"
 POP_FILE = POP_FILE if len(sys.argv) == 1 else sys.argv[1]

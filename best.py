@@ -64,8 +64,10 @@ if __name__ == "__main__":
                 with open("results/%d" % i, "wb") as indf:
                     pickle.dump(ind, indf)
 
-            with open("tables/%d" % i, "w") as tfile: 
-                print(rules2tableDiff(P, ind, rules), file=tfile)
+                with open("tables/%d" % i, "w") as tfile: 
+                    print(rules2tableDiff(P, ind, rules), file=tfile)
+                    print("<p>Hamming: %d</p>" % hamming, file=tfile)
+
             print(ind.fitness.values)
             if print_rule:
                 print ("{")

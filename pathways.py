@@ -312,14 +312,10 @@ def run_network(interpretation_func, state : np.uint32, rules):
         yield state
 
 def model_attractors_exhaustive(P, interpretation_func, rules, 
-        canonicalize = True, container = Counter):
+        canonicalize = True):
     total = 1 << (len(P) - 1)
-    total = 1000
-    return container(tqdm((
-            complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = None)
-            for state in range(total)),
-            total = total
-            ))
+    for state in range(total):
+        yield complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = None)
 
 def model_attractors(interpretation_func, rules, subsample_size : int,
         canonicalize = True, container = set, maxsteps = None):
