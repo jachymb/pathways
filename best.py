@@ -73,6 +73,6 @@ if __name__ == "__main__":
                 print ("{")
                 for head, rule in zip(P, per_selur(P, ind)):
                     print("\t%s: %s" % (head.name, rule))
-                print ("}")
+                print("}")
                 print()
 

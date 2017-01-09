@@ -39,6 +39,9 @@ class P(IntEnum):
     H2AX = 26
     CHKREC = 27
 
+    @classmethod
+    def states(cls):
+        return 1 << len(cls)
 
 # Force enum constants' names to namespace as logical symbols
 syms = {m : Symbol(m) for m in P.__members__}
@@ -107,8 +110,8 @@ rules_updated = {
         CHKREC: ((PCNATLS | NHEJ | HRR) & ~DSB) | (~ADD & ~ICL & ~DSB & ~CHKREC),
         }
 
-paper_rules = rules_updated
-#paper_rules = rules_original
+#paper_rules = rules_updated
+paper_rules = rules_original
 
 Z = np.uint32(0)
 A = ~Z
@@ -313,9 +316,31 @@ def run_network(interpretation_func, state : np.uint32, rules):
 
 def model_attractors_exhaustive(P, interpretation_func, rules, 
         canonicalize = True):
-    total = 1 << (len(P) - 1)
-    for state in range(total):
+    for state in range(P.states()):
         yield complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = None)
+
+# use with "all"
+def hasSingleAttractor(P, interpretation_func, rules, desired_attractor):
+    m = np.full(P.states(), False, dtype=bool)
+    for f, t in zip(desired_attractor[::2], ((desired_attractor[-1],)+desired_attractor)[::2]):
+        if step(interpretation_func, f, rules) != t:
+            #return False
+            raise ValueError("Invalid attractor")
+        else:
+            m[f] = True
+
+    visited = set()
+    for current in range(P.states()):
+        visited.clear()
+        while current not in visited:
+            if m[current]:
+                for v in visited: m[v] = True
+                yield True
+                break
+            visited.add(current)
+            current = step(interpretation_func, current, rules)
+        else:
+            yield False
 
 def model_attractors(interpretation_func, rules, subsample_size : int,
         canonicalize = True, container = set, maxsteps = None):
