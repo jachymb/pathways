@@ -13,7 +13,9 @@ if __name__ == "__main__":
 
     if all(tqdm(
             hasSingleAttractor(P, ind, DESIRED_ATTRACTOR),
-            total = P.states())):
+            total = P.states(),
+            mininterval=1.0,
+            )):
         print("Yea!")
     else:
         print("Nay!")

@@ -331,7 +331,7 @@ def model_attractors_exhaustive(P, interpretation_func, rules,
 # use with "all"
 def hasSingleAttractor(P, rules, desired_attractor):
     m = np.full(P.states(), False, dtype=bool)
-    for f, t in zip(desired_attractor[::2], ((desired_attractor[-1],)+desired_attractor)[::2]):
+    for f, t in zip(desired_attractor, (desired_attractor+(desired_attractor[-1],))[1:]):
         if step_dnf(f, rules) != t:
             #return False
             raise ValueError("Invalid attractor")
