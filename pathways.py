@@ -124,7 +124,7 @@ def dnf_len(dnf : Boolean):
 def dnf_rep(p : IntEnum, dnf : Boolean, k : int = None) -> np.array:
     if k is None:
         k = dnf_len(dnf)
-    assert len(p) < 32
+    #assert len(p) < 32
     rep = np.zeros((k,2), dtype=np.uint32)
 
     def add_literal(i : int, literal : Boolean):
@@ -214,8 +214,8 @@ def interpret_logical(p : IntEnum, i: int, formula : Boolean) -> bool:
         return bool(i & (1 << p[str(formula)]))
 
 def interpret_dnf(i: int, dnf : np.ndarray) -> bool:
-    assert dnf.ndim == 2
-    assert dnf.shape[1] == 2
+    #assert dnf.ndim == 2
+    #assert dnf.shape[1] == 2
     #assert not np.any(np.all(dnf == 0, axis=1)) # No empty terms
 
     for c in dnf:
@@ -254,18 +254,27 @@ def per_selur(p : IntEnum, rules : np.ndarray):
 
 #step_cache = np.full(2**len(P), A, dtype=np.uint32)
 def step(interpretation_func, state : np.uint32, rules) -> np.uint32:
-    assert isinstance(rules, np.ndarray)
+    #assert isinstance(rules, np.ndarray)
     r = Z
     i = Z
     for rule in rules:
-        assert isinstance(rule, np.ndarray), rule
-        assert rule.ndim == 2, (rule.shape, i, rules.shape)
+        #assert isinstance(rule, np.ndarray), rule
+        #assert rule.ndim == 2, (rule.shape, i, rules.shape)
         r |= (interpretation_func(state, rule) << i)
         i += 1
     return r
 
+def step_dnf(state : np.uint32, rules) -> np.uint32:
+    r = Z
+    i = Z
+    for rule in rules:
+        r |= (interpret_dnf(state, rule) << i)
+        i += 1
+    return r
+
+
 def attractor(interpretation_func, state : np.uint32, rules) -> int:
-    assert isinstance(rules, np.ndarray)
+    #assert isinstance(rules, np.ndarray)
     explored = set()
     while state not in explored:
         explored.add(state)
@@ -320,10 +329,10 @@ def model_attractors_exhaustive(P, interpretation_func, rules,
         yield complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = None)
 
 # use with "all"
-def hasSingleAttractor(P, interpretation_func, rules, desired_attractor):
+def hasSingleAttractor(P, rules, desired_attractor):
     m = np.full(P.states(), False, dtype=bool)
     for f, t in zip(desired_attractor[::2], ((desired_attractor[-1],)+desired_attractor)[::2]):
-        if step(interpretation_func, f, rules) != t:
+        if step_dnf(f, rules) != t:
             #return False
             raise ValueError("Invalid attractor")
         else:
@@ -338,7 +347,7 @@ def hasSingleAttractor(P, interpretation_func, rules, desired_attractor):
                 yield True
                 break
             visited.add(current)
-            current = step(interpretation_func, current, rules)
+            current = step_dnf(current, rules)
         else:
             yield False
 
@@ -353,7 +362,7 @@ def model_attractors(interpretation_func, rules, subsample_size : int,
 
 def transition_model(rules) -> np.array:
     n_transitions = 1 << len(rules)
-    assert len(rules) < 32
+    #assert len(rules) < 32
     transitions = np.empty(n_transitions, -1, dtype=np.uint32)
     for i in range(n_transitions):
         transitions[i] = step(i, rules)

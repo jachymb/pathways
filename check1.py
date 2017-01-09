@@ -12,7 +12,7 @@ if __name__ == "__main__":
         ind = pickle.load(indfile)
 
     if all(tqdm(
-            hasSingleAttractor(P, interpret_dnf, ind, DESIRED_ATTRACTOR),
+            hasSingleAttractor(P, ind, DESIRED_ATTRACTOR),
             total = P.states())):
         print("Yea!")
     else:
