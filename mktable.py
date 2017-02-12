@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from evolver import *
 import os
 import sys
@@ -14,7 +15,7 @@ def to_table(P, rules, start):
                 trajectory,
                 (n,1)).T) > 0
 
-def print_table(P, rules, starts, filename):
+def print_table_html(P, rules, starts, filename):
     with open(filename, "w") as f:
         #print('<style type="text/css">td { width: 10px}\nth { width: 10px}</style>')
         for start in starts:
@@ -34,6 +35,18 @@ def print_table(P, rules, starts, filename):
                 print("</tr>", file=f)
             print("</table><br><br><br>", file=f)
 
+def print_table_tex(P, rules, starts, filename):
+    size = "small"
+    with open(filename, "w") as f:
+        for start in starts:
+            t = to_table(P, rules, start)
+            print(r"\begin{table}\centering\begin{tabular}{%s|} \hline " % ("|c"*(len(P)+1) ), file=f)
+            print(" & ".join(r"\rot{{\%s %s }}" % (size, x) for x in ["Time"] + [n.name for n in P]) + r" \\ \hline", file=f)
+            for i,r in enumerate(t):
+                print((r"{\%s %d} & " % (size, i+1)) + " & ".join(r"\cellcolor{gray}" if c else "" for c in r) + r" \\ \hline", file=f)
+            print(r"\end{tabular}\end{table}", file=f)
+
+
 if __name__ == "__main__":
     with open(sys.argv[1],"rb") as f:
         rules = pickle.load(f)
@@ -41,5 +54,6 @@ if __name__ == "__main__":
 
     starts = [1 << s for s in (P.DSB, P.ADD, P.ICL)]
     print(starts)
-    print_table(P, rules, starts, os.path.basename(sys.argv[1])+".html")
+    print_table_html(P, rules, starts, "trajectories/" + os.path.basename(sys.argv[1])+".html")
+    print_table_tex(P, rules, starts, "trajectories/" + os.path.basename(sys.argv[1])+".tex")
 

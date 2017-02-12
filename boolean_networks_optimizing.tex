@@ -1,7 +1,24 @@
 \documentclass[a4paper,10pt]{article}
 \usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{calc}
+\usepackage[table]{xcolor}
 
-%opening
+\usepackage{array,graphicx}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usepackage[table]{xcolor}
+
+\usepackage{placeins}
+
+\newsavebox\CBox
+\newcommand\hcancel[2][0.5pt]{%
+  \ifmmode\sbox\CBox{$#2$}\else\sbox\CBox{#2}\fi%
+  \makebox[0pt][l]{\usebox\CBox}%  
+  \rule[0.5\ht\CBox-#1/2]{\wd\CBox}{#1}}
+
+\newcommand*\rot{\rotatebox{90}}
+
 \title{Boolean network optimization}
 \author{Jáchym Barvínek}
 
@@ -104,6 +121,218 @@ An interesting observation is that all of those individuals involved
 negative self-regulation of the CHKREC node, which was also inferred 
 by the authors of \cite{rodriguez1}.
 
+\section{The Solutions}
+We present here the definitions of the Boolean functions functions of nodes found by our method,
+an alternative to those defined in the supplementary materials for \cite{rodriguez1}.
+All of them have Hamming distance 3 from the unmodified network. 
+In particular, the original network corresponds to the function definitions from Table 1 in the
+supplementary materials with dropped regulatory effects marked by a dagger ``$\dagger$'' there and represented in DNF.
+The effects added instead by our method are typed in \textbf{bold} and removed effects are \hcancel{stroke out}.
+
+For each result, we also present visualizations of the recovery process trajectory from with a damage on 
+DSB, ADD and ICL nodes respectively. 
+
+\FloatBarrier
+\subsection{Solution 1}
+\begin{align*}
+ \textrm{FAcore} \leftarrow &(\textrm{ATM} \land \textrm{FANCM} \land \neg \textrm{CHKREC}) \\
+ \lor &(\textrm{ATR} \land \mathbf{FANCD1N} \land \textrm{FANCM} \land \neg \textrm{CHKREC}) \\
+ \textrm{ATM} \leftarrow &(\mathbf{ICL} \land \textrm{ATR} \land \neg \textrm{CHKREC}) \\
+ \lor &(\textrm{DSB} \land \neg \textrm{CHKREC}) \\
+ \textrm{CHKREC} \leftarrow &\textrm{HRR} \\
+ \lor &\textrm{NHEJ} \\
+ \lor &\textrm{PCNATLS} \\
+ \lor &(\textrm{DSB} \land \mathbf{\neg CHKREC})
+\end{align*}
+
+\setlength{\tabcolsep}{0.3em}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  \\ \hline
+{\small 3} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  \\ \hline
+{\small 4} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} \\ \hline
+{\small 5} &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 6} &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 9} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 10} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  \\ \hline
+{\small 11} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} \\ \hline
+{\small 12} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 13} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\FloatBarrier
+\subsection{Solution 2}
+
+\begin{align*}
+ \textrm{ssDNARPA} \leftarrow &(\textrm{DSB} \land \textrm{MRN} \land \neg \textrm{RAD51}) \\
+ \lor &(\textrm{FANCD2I} \land \textrm{DSB} \land \neg \textrm{RAD51} \neg \textrm{FANCJBRCA1} \\
+ \lor &\mathbf{ADD} \\
+ \textrm{ATR} \leftarrow &(\mathbf{XPF} \land \textrm{ATM}) \\
+ \lor &\textrm{FANCM} \\
+ \lor &\textrm{ssDNARPA} \\
+ \textrm{CHKREC} \leftarrow &\textrm{HRR} \\
+ \lor &\textrm{NHEJ} \\
+ \lor &\textrm{PCNATLS} \\
+ \lor &(\textrm{DSB} \land \mathbf{\neg CHKREC})
+\end{align*}
+
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  \\ \hline
+{\small 3} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  \\ \hline
+{\small 4} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} \\ \hline
+{\small 5} &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 6} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 9} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 10} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 11} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\FloatBarrier
+\subsection{Solution 3}
+
+\begin{align*}
+ \textrm{FAcore} \leftarrow &(\textrm{ATM} \land \textrm{FANCM} \land \neg \textrm{CHKREC}) \\
+ \lor &(\textrm{ATR} \land \textrm{FANCM} \land \neg \textrm{CHKREC}) \\
+ \lor &\mathbf{FAN1} \\
+ \textrm{ATR} \leftarrow &\hcancel{ATM} \\
+ \lor &\textrm{FANCM} \\
+ \lor &\textrm{ssDNARPA} \\
+ \textrm{CHKREC} \leftarrow &\textrm{HRR} \\
+ \lor &\textrm{NHEJ} \\
+ \lor &\textrm{PCNATLS} \\
+ \lor &(\textrm{DSB} \land \mathbf{\neg CHKREC})
+\end{align*}
+
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  \\ \hline
+{\small 3} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  \\ \hline
+{\small 4} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} \\ \hline
+{\small 5} &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 6} &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 9} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 10} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 11} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\FloatBarrier
+\subsection{Solution 4}
+
+\begin{align*}
+ \textrm{ssDNARPA} \leftarrow &(\textrm{DSB} \land \textrm{MRN} \land \neg \textrm{RAD51}) \\
+ \lor &(\textrm{FANCD2I} \land \textrm{DSB} \land \neg \textrm{RAD51} \neg \textrm{FANCJBRCA1} \\
+ \lor &\mathbf{ADD} \\
+ \textrm{ATR} \leftarrow &(\mathbf{XPF} \land \textrm{ATM}) \\
+ \lor &\textrm{FANCM} \\
+ \lor &\textrm{ssDNARPA} \\
+ \textrm{CHKREC} \leftarrow &\textrm{HRR} \\
+ \lor &\textrm{NHEJ} \\
+ \lor &\textrm{PCNATLS} \\
+ \lor &(\textrm{DSB} \land \mathbf{\neg CHKREC})
+\end{align*}
+
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  \\ \hline
+{\small 3} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 4} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 5} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 6} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\begin{table}\centering\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|} \hline 
+\rot{{\small Time }} & \rot{{\small ICL }} & \rot{{\small FANCM }} & \rot{{\small FAcore }} & \rot{{\small FANCD2I }} & \rot{{\small MUS81 }} & \rot{{\small FAN1 }} & \rot{{\small XPF }} & \rot{{\small ADD }} & \rot{{\small DSB }} & \rot{{\small ssDNARPA }} & \rot{{\small MRN }} & \rot{{\small PCNATLS }} & \rot{{\small HRR }} & \rot{{\small FANCD1N }} & \rot{{\small RAD51 }} & \rot{{\small FANCJBRCA1 }} & \rot{{\small USP1 }} & \rot{{\small KU }} & \rot{{\small DNAPK }} & \rot{{\small NHEJ }} & \rot{{\small ATR }} & \rot{{\small ATM }} & \rot{{\small BRCA1 }} & \rot{{\small p53 }} & \rot{{\small CHK1 }} & \rot{{\small CHK2 }} & \rot{{\small H2AX }} & \rot{{\small CHKREC }} \\ \hline
+{\small 1} & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 2} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 3} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  &  &  \\ \hline
+{\small 4} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} \\ \hline
+{\small 5} &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 6} &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} \\ \hline
+{\small 7} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  & \cellcolor{gray} \\ \hline
+{\small 8} &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  &  & \cellcolor{gray} &  &  & \cellcolor{gray} & \cellcolor{gray} &  &  &  &  \\ \hline
+{\small 9} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} &  &  &  & \cellcolor{gray} &  &  &  &  &  & \cellcolor{gray} \\ \hline
+{\small 10} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+{\small 11} &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & \cellcolor{gray} \\ \hline
+\end{tabular}\end{table}
+\FloatBarrier
 \bibliography{boolean_networks_optimizing}{}
 \bibliographystyle{plain}
 
