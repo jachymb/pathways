@@ -8,8 +8,27 @@ from sympy.core.symbol import Symbol
 from sympy.logic.boolalg import Or, And, Not, to_dnf, to_cnf, Boolean
 from sympy.core.function import FunctionClass
 from collections import Counter
+from itertools import product
+from tempfile import NamedTemporaryFile
+import subprocess
+import math, os
+import random
 
-class P(IntEnum):
+def popcount(a):
+    a -= np.bitwise_and(np.right_shift(a, 1), 0x55555555)
+    a = np.bitwise_and(a, 0x33333333) + np.bitwise_and(np.right_shift(a, 2), 0x33333333)
+    return np.right_shift(np.bitwise_and((np.bitwise_and(a + np.right_shift(a, 4), 0xF0F0F0F) * 0x1010101), 0xffffffff), 24)
+
+def hamming(a, b):
+    #print("callint hamming")
+    return int(popcount(a^b).sum())
+
+class Var(IntEnum):
+    @classmethod
+    def states(cls):
+        return 1 << len(cls)
+
+class P(Var):
     ICL = 0
     FANCM = 1
     FAcore = 2
@@ -39,15 +58,50 @@ class P(IntEnum):
     H2AX = 26
     CHKREC = 27
 
-    @classmethod
-    def states(cls):
-        return 1 << len(cls)
+class P2(Var):
+    ICL = 0
+    FAcore  = 1
+    FANCD2I = 2
+    NUC1 = 3
+    NUC2 = 4
+    ADD = 5
+    DSB = 6
+    TLS = 7
+    FAHRR = 8
+    HRR2 = 9
+    NHEJ = 10
+    ATR = 11
+    ATM = 12
+    p53 = 13
+    CHKREC = 14
+
+class X(Var):
+    X0 = 0
+    X1 = 1
+    X2 = 2
+    X3 = 3
+    X4 = 4
+    X5 = 5
+    X6 = 6
+    X7 = 7
+    X8 = 8
+
+class M(Var):
+    CycD = 0
+    Rb = 1
+    E2F = 2
+    CycE = 3
+    CycA = 4
+    p27 = 5
+    Cdc20 = 6
+    Cdh1 = 7
+    UbcH10 = 8
+    CycB = 9
 
 # Force enum constants' names to namespace as logical symbols
-syms = {m : Symbol(m) for m in P.__members__}
+syms = {m : Symbol(m) for s in Var.__subclasses__() for m in s.__members__}
 globals().update(syms)
 
-# Et voila,
 rules_original = {
         ICL : ICL & ~DSB,
         FANCM : ICL & ~CHKREC,
@@ -105,13 +159,69 @@ rules_updated = {
         ATM: (ATR | DSB) & ~CHKREC,
         p53: (((ATM & CHK2) | (ATR & CHK1)) | DNAPK) & ~CHKREC,
         CHK1: (ATM | ATR | DNAPK) & ~CHKREC,
-        CHK2: (ATM | ATR | DNAPK) & ~CHKREC, 
+        CHK2: (ATM | ATR | DNAPK) & ~CHKREC,
         H2AX: DSB & (DNAPK | ATM | ATR) & ~CHKREC,
         CHKREC: ((PCNATLS | NHEJ | HRR) & ~DSB) | (~ADD & ~ICL & ~DSB & ~CHKREC),
         }
 
+#rules_mammalian_1 = {
+#        X1: (~X3 & ~X8),
+#        X2: X1,
+#        X3: (X1 & ~X5 & ~(X6 & X7))|(X3 & ~X5 & ~(X6 & X7)),
+#        X5: X8,
+#        X6: (~X3 & ~X8) | X5 ,
+#        X7: ~X6 | (X6 & X7 & (X5 | X3 | X8)),
+#        X8: ~X5 & ~X6
+#        }
+
+rules_fa_2 = {
+        ICL : ICL & ~DSB,
+        FAcore : ICL & (ATR | ATM) & ~CHKREC,
+        FANCD2I : FAcore & ((ATR | ATM) | ((ATR | ATM) & DSB)) & ~CHKREC,
+        NUC1 : ICL & FANCD2I,
+        NUC2 :(ICL & (ATR | ATM) & ~(FAcore & FANCD2I)) | (ICL & NUC1 & p53 & ~(FAcore & FANCD2I)),
+        ADD : (NUC1 | NUC2 | (NUC1 & NUC2)) & ~TLS,
+        DSB : (NUC1 | NUC2) & ~(NHEJ | FAHRR  | HRR2),
+        TLS : (ADD | (ADD & FAcore)) & ~CHKREC,
+        FAHRR : DSB & FANCD2I & ~(NHEJ & CHKREC),
+        HRR2 : (DSB & NUC2 & NHEJ & ICL & ~(FAHRR | CHKREC)) | (DSB & NUC2 & TLS & ~(NHEJ | FAHRR | CHKREC)),
+        NHEJ : (DSB & NUC2 & ~(FAHRR | HRR2 | CHKREC)),
+        ATR : (ICL | ATM) & ~CHKREC,
+        ATM : (ATR | DSB) & ~(CHKREC | FAcore), # AMBIGUOUS grouping in paper!!!
+        p53 : ((ATR | ATM) | NHEJ) & ~CHKREC,
+        CHKREC : ((TLS | NHEJ | FAHRR | HRR2) & ~DSB) | (~ADD & ~ICL & ~DSB & ~CHKREC)
+        }
+
+rules_mammalian_0 = {
+        X0: (~X2 & ~X3 & ~X8)|(X4 & ~X8),
+        X1: (~X0 & ~X3 & ~X8)|(X4 & ~X0 & ~X8),
+        X2: X1 & ~X0,
+        X3: (X1 & ~X0 & ~X5 & ~(X6 & X7))|(X3 & ~X0 & ~X5 & ~(X6 & X7)),
+        X4: (~X2 & ~X3 & ~X8)|(X4 & ~(X2 & X3) & ~X8),
+        X5: X8,
+        X6: (~X3 & ~X8) | X5 | (X4 & ~X8),
+        X7: ~X6 | (X6 & X7 & (X5 | X3 | X8)),
+        X8: ~X5 & ~X6
+        }
+
+rules_mammalian_full = {
+        CycD: CycD,
+        Rb: (~CycD & ~CycE & ~CycA & ~CycB) | (p27 & ~CycD & ~CycB),
+        E2F: (~Rb & ~CycA & ~CycB) | (p27 & ~Rb & ~CycB),
+        CycE: (E2F & ~Rb),
+        CycA: (E2F & ~Rb & ~Cdc20 & ~(Cdh1 & UbcH10)) | (CycA & ~Rb & ~Cdc20 & ~(Cdh1 & UbcH10)),
+        p27: (~CycD & ~CycE & ~CycA & ~CycB) | (p27 & ~(CycE & CycA) & ~CycB & ~CycD),
+        Cdc20: CycB,
+        Cdh1: (~CycA & ~CycB) | Cdc20 | (p27 & ~CycB),
+        UbcH10: ~Cdh1 | (Cdh1 & UbcH10 & (Cdc20 | CycA | CycB)),
+        CycB: ~Cdc20 & ~Cdh1
+        }
+
+#paper_rules = rules_fa_2; P = P2
 #paper_rules = rules_updated
-paper_rules = rules_original
+#paper_rules = rules_original
+paper_rules = rules_mammalian_0; P = X
+#paper_rules = rules_mammalian_full; P = M
 
 Z = np.uint32(0)
 A = ~Z
@@ -152,7 +262,7 @@ def dnf_rep(p : IntEnum, dnf : Boolean, k : int = None) -> np.array:
         add_literal(0, dnf)
     return rep
 # Test dnf_rep
-assert dnf_rep(P, And(FANCD1N, ssDNARPA)).tolist() == [[0, 0b10001000000000]]
+#assert dnf_rep(P, And(FANCD1N, ssDNARPA)).tolist() == [[0, 0b10001000000000]]
 #print(dnf_rep(P, And(ATR, FAcore, Not(USP1))))
 #print(np.array([[1 << 16, (1 << 2) | (1 << 20)]], dtype=np.uint32))
 
@@ -306,6 +416,7 @@ def complete_attractor(interpretation_func, state : np.uint32, rules, canonicali
         else:
             return None
 
+    l = len(explored)
     explored = []
     while state not in explored:
         explored.append(state)
@@ -315,6 +426,7 @@ def complete_attractor(interpretation_func, state : np.uint32, rules, canonicali
         s = explored.index(min(explored))
         explored = explored[s:] + explored[:s]
 
+    #return (tuple(explored), l)
     return tuple(explored)
 
 def run_network(interpretation_func, state : np.uint32, rules):
@@ -323,7 +435,7 @@ def run_network(interpretation_func, state : np.uint32, rules):
         state = step(interpretation_func, state, rules)
         yield state
 
-def model_attractors_exhaustive(P, interpretation_func, rules, 
+def model_attractors_exhaustive(P, interpretation_func, rules,
         canonicalize = True):
     for state in range(P.states()):
         yield complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = None)
@@ -351,11 +463,14 @@ def hasSingleAttractor(P, rules, desired_attractor):
         else:
             yield False
 
-def model_attractors(interpretation_func, rules, subsample_size : int,
+def model_attractors(interpretation_func, rules, subsample_size = None,
         canonicalize = True, container = set, maxsteps = None):
     np.random.seed(0)
     n_transitions = 1 << len(rules)
-    samples = np.random.randint(0, n_transitions, subsample_size, dtype=np.uint32)
+    if subsample_size:
+        samples = np.random.randint(0, n_transitions, subsample_size, dtype=np.uint32)
+    else:
+        samples = np.arange(n_transitions, dtype=np.uint32)
     return container(
             complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = maxsteps)
             for state in samples)
@@ -363,10 +478,109 @@ def model_attractors(interpretation_func, rules, subsample_size : int,
 def transition_model(rules) -> np.array:
     n_transitions = 1 << len(rules)
     #assert len(rules) < 32
-    transitions = np.empty(n_transitions, -1, dtype=np.uint32)
-    for i in range(n_transitions):
-        transitions[i] = step(i, rules)
+    transitions = np.empty(n_transitions, dtype=np.uint32)
+    for i in tqdm(range(n_transitions)):
+        transitions[i] = step(interpret_dnf, i, rules)
+        if i % 1000 == 0:
+            c = Counter(transitions[:i])
+            #print(np.average(list(c.values())))
+            #print(np.median(list(c.values())))
+
+
     return transitions
+
+def transition_model_as_matrix(model):
+    n = len(model)
+    m = np.zeros((n,n), dtype=np.uint32)
+    for i,v in enumerate(model):
+        m[i,v] = 1
+    return m
+
+def transition_model_to_hs(model):
+    l = int(math.log2(len(model)))
+    def label(i):
+        return ",".join(reversed(bin(i)[2:].rjust(l, '0'))).replace("0", "False").replace("1", " True")
+
+    s = "data :: Data %d\n" % l
+    s += "data = [\n"
+    s += ",\n  ".join("([%s], [%s])" % (label(a), label(b)) for a,b in enumerate(model))
+    s += "\n]"
+    return s
+
+def transition_model_to_mathematica(model):
+    return "Graph[{" + ",".join("DirectedEdge[%i,%i]" % p for p in enumerate(m)) + "}]"
+
+def transition_model_to_asp(model, unknown_ratio = 0.1):
+    k = len(model)
+    l = int(math.log2(k))
+    unknown = set(random.sample(range(k), round(k*unknown_ratio)))
+    s = f"""
+nvars({l}).
+
+"""
+    for state in range(k):
+        p = "gt_" if state in unknown else ""
+        for variable in range(l):
+            i = min(1, model[state] & (1 << variable))
+            s += f"{p}observation({state}, {variable}, {i}).\n"
+        s += f"{p}transition({state}, {model[state]}).\n"
+    return s
+
+def transition_model_to_dot(model):
+    l = int(math.log2(len(model)))
+    w = 1
+    while w*w < len(model):
+        w*=2
+
+    def label(i):
+        return bin(i)[2:].rjust(l, '0')
+    def pos(i):
+        return "%d,%d!" % divmod(i,w)
+
+    g = "strict digraph {\n  "
+    #g += ";\n  ".join(f'q{f} [label="{label(f)}", pos="{pos(f)}"]' for f in range(len(model)))
+    g += ";\n  ".join(f'q{f} [label="{label(f)}"]' for f in range(len(model)))
+    g += ";\n  "
+    g += ";\n  ".join(f'q{f} -> q{t}' for f,t in enumerate(model))
+    g += "\n}"
+    return g
+
+def blif2rules(blifData):
+    v = None
+    rules = []
+    last = 0
+    for line in blifData:
+        line = line[:line.find('#')].strip()
+        if line:
+            words = line.split(' ')
+            if words[0] == '.v':
+                v = int(words[1])
+            elif words[0] == '.n':
+                assert last + 1 == int(words[1])
+                last += 1
+                dependent = [int(x)-1 for x in words[3:]]
+                rules.append((dependent, []))
+            else:
+                assert words[1] == '1'
+                rules[-1][1].append(words[0])
+    assert v == len(rules)
+    assert v < 32
+    maxterms = max(len(r[1]) for r in rules)
+    rules_np = np.zeros((v, maxterms, 2), dtype=np.uint32)
+    for i, (dependent, dnf) in enumerate(rules):
+        for j, conj in enumerate(dnf):
+            for v,b in zip(dependent, conj):
+                if b == '0':
+                    rules_np[i][j][0] |= 1 << v
+                elif b == '1':
+                    rules_np[i][j][1] |= 1 << v
+    return rules_np
+
+
+
+
+
+
 
 interpret_logicalP = partial(interpret_logical,P)
 
@@ -376,11 +590,45 @@ rules_logical2 = [to_dnf(r) for r in rules_logical]
 rules = rules_rep(P, rules_sym, same_k = True)
 max_k = max(dnf_len(dnf) for dnf in rules_sym.values())
 
-# test
-#assert per_selur(P,rules_rep(P,rules_logical2)) == rules_logical2
+def all_clauses(n_vars):
+    return (
+            (x,y)
+            for (x,y)
+            in product(np.arange(2**n_vars, dtype=np.uint32), repeat=2)
+            if x & y == Z and x | y)
 
-if __name__ == "__main__":
+def all_dnfs(n_vars, k):
+    return map(np.array, product(all_clauses(n_vars), repeat=k))
 
+def all_rules(n_vars, k):
+    return product(all_dnfs(n_vars, k), repeat=n_vars)
+
+def has_single_fixpoint(rules):
+    def cont(i):
+        s = next(i)
+        if len(s) != 1:
+            return False
+        for z in i:
+            if z != s:
+                return False
+        return True
+
+    return model_attractors(interpret_dnf, rules, canonicalize=False, container=cont)
+
+def is_contraction(rules):
+    ub = 2**len(rules)
+    for i in map(np.uint32, range(ub)):
+        st1 = step(interpret_dnf, i, rules)
+        for j in map(np.uint32, range(ub)):
+            if i != j:
+                st2 = step(interpret_dnf, j, rules)
+                ham_a = popcount(i ^ j)
+                ham_b = popcount(st1 ^ st2)
+                if ham_b >= ham_a: return False
+    return True
+
+
+def main():
     for i,attractor in enumerate(model_attractors(interpret_logicalP, rules_logical2, 200)):
         print(i+1)
         for a in attractor:
@@ -393,4 +641,37 @@ if __name__ == "__main__":
         for a in attractor:
             print(("{0:0"+str(len(P))+"b}").format(a))
 
+def plot(k, c):
+    print("-"*30)
+    print(k, c)
+    isos = set()
+    cnt = 0
+    for i, rules in enumerate(all_rules(k, c)):
+        m = tuple(transition_model(rules))
+        if m in isos:
+            continue
+        else:
+            isos.add(m)
+        if not has_single_fixpoint(rules): continue
 
+        dot = transition_model_to_dot(m)
+        if not os.path.isdir(f"dot/{k}/{c}"): os.makedirs(f"dot/{k}/{c}")
+        if not os.path.isdir(f"png/{k}/{c}"): os.makedirs(f"png/{k}/{c}")
+        md = f"dot/{k}/{c}/{i}.dot"
+        mn = f"png/{k}/{c}/{i}.png"
+        with open(md, "w") as f:
+            f.write(dot)
+            #f.close()
+        subprocess.check_call(["dot", "-Kfdp", "-Tpng", md, "-o", mn])
+        cnt += 1
+        print(i, "%.2f" % (cnt / len(isos)))
+        #subprocess.check_call(["display", mn])
+
+#plot(2,1)
+#plot(2,2)
+#plot(2,3)
+#plot(3,1)
+#plot(3,2)
+#plot(3,3)
+m = transition_model(rules)
+print(transition_model_to_asp(m, 0.2))
