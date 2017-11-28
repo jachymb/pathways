@@ -475,6 +475,15 @@ def model_attractors(interpretation_func, rules, subsample_size = None,
             complete_attractor(interpretation_func, state, rules, canonicalize = canonicalize, maxsteps = maxsteps)
             for state in samples)
 
+def converge(interpretation_func, rules, state):
+    explored = []
+    while state not in explored:
+        explored.append(state)
+        state = step(interpretation_func, state, rules)
+
+    return explored
+
+
 def transition_model(rules) -> np.array:
     n_transitions = 1 << len(rules)
     #assert len(rules) < 32
